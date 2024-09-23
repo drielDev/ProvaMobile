@@ -121,6 +121,20 @@ fun LayoutMain() {
         composable("produtoActivity") {
             ProdutoActivity(navController = navController, produtos = listaProdutos)
         }
+
+        composable("detalhes/{nome}/{categoria}/{preco}/{quantEstoque}") { backStackEntry ->
+            val nome = backStackEntry.arguments?.getString("nome")
+            val categoria = backStackEntry.arguments?.getString("categoria")
+            val preco = backStackEntry.arguments?.getString("preco")?.toFloatOrNull()
+            val quantEstoque = backStackEntry.arguments?.getString("quantEstoque")?.toIntOrNull()
+
+            if (nome != null && categoria != null && preco != null && quantEstoque != null) {
+                Detalhes(
+                    navController = navController,
+                    produto = Produto(nome, categoria, preco, quantEstoque)
+                )
+            }
+        }
     }
 }
 
@@ -140,25 +154,67 @@ fun ProdutoActivity(navController: NavController, produtos: List<Produto>) {
         } else {
             LazyColumn(Modifier.fillMaxWidth()) {
                 items(produtos) { produto ->
-                    ListaProduto(produto = produto)
+                    ListaProduto(produto = produto, navController)
                 }
             }
+        }
+
+        Button(onClick = {
+            // Volta para a tela anterior
+            navController.popBackStack()
+        }) {
+            Text(text = "Voltar")
         }
     }
 }
 
-        @Composable
-        fun ListaProduto(produto: Produto) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "${produto.nome}, (${produto.quantEstoque})", fontSize = 20.sp)
-            }
+@Composable
+fun ListaProduto(produto: Produto, navController: NavController) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = "Produto ${produto.nome} (${produto.quantEstoque})", fontSize = 20.sp)
+
+        Button(onClick = {
+            // Navega para a tela de detalhes com os parâmetros
+            navController.navigate(
+                "detalhes/${produto.nome}/${produto.categoria}/${produto.preco}/${produto.quantEstoque}"
+            )
+        }) {
+            Text(text = "Detalhes")
         }
+    }
+}
+
+
+@Composable
+fun Detalhes(navController: NavController, produto: Produto) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Nome: ${produto.nome}", fontSize = 24.sp)
+        Text(text = "Categoria: ${produto.categoria}", fontSize = 24.sp)
+        Text(text = "Preço: R$ ${produto.preco}", fontSize = 24.sp)
+        Text(text = "Quantidade em Estoque: ${produto.quantEstoque}", fontSize = 24.sp)
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Button(onClick = {
+            // Volta para a tela anterior
+            navController.popBackStack()
+        }) {
+            Text(text = "Voltar")
+        }
+    }
+}
+
+
 
 @Preview(showBackground = true)
 @Composable

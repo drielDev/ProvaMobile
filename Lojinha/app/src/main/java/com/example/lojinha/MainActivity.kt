@@ -77,7 +77,6 @@ fun Cadastro(navController: NavController, listaProdutos: MutableList<Produto>) 
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
-            // Verificação de parametros
             if (nome.isBlank() || categoria.isBlank() || preco.isBlank() || quantEstoque.isBlank()) {
                 Toast.makeText(context, "Preencher todos os campos!", Toast.LENGTH_SHORT).show()
             } else if (quantEstoque.toInt() < 1) {
@@ -182,8 +181,8 @@ fun ProdutoActivity(navController: NavController, produtos: List<Produto>) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), // Adicionando padding aos botões
-            horizontalArrangement = Arrangement.SpaceEvenly // Espaçamento igual entre os botões
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
                 onClick = {
@@ -233,11 +232,13 @@ fun InformacaoEstoque(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "${Estoque.calcularValorTotalEstoque()} valor total do estoque", fontSize = 20.sp)
+        Text(text = "valor total do estoque: ${Estoque.calcularValorTotalEstoque()} ", fontSize = 20.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(text = " ${Estoque.quantidadeTotalProdutos()} produtos no estoque", fontSize = 20.sp)
+        Text(text = "produtos no estoque: ${Estoque.quantidadeTotalProdutos()} ", fontSize = 20.sp)
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = { navController.popBackStack() }) {
             Text(text = "Voltar")

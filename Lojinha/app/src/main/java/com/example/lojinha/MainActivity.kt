@@ -1,4 +1,7 @@
+package com.example.lojinha
+
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -9,6 +12,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -16,7 +20,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-data class Produto(val nome: String, val categoria: String, val preco: Float, val quantEstoque: Int)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +37,8 @@ fun Cadastro(navController: NavController, listaProdutos: MutableList<Produto>) 
     var categoria by remember { mutableStateOf("") }
     var preco by remember { mutableStateOf("") }
     var quantEstoque by remember { mutableStateOf("") }
+
+    var context = LocalContext.current
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -63,12 +68,28 @@ fun Cadastro(navController: NavController, listaProdutos: MutableList<Produto>) 
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
-            // Adiciona o produto à lista
-            listaProdutos.add(Produto(nome, categoria, preco.toFloatOrNull() ?: 0.0f, quantEstoque.toIntOrNull() ?: 0))
-            nome = ""
-            categoria = ""
-            preco = ""
-            quantEstoque = ""
+            if(nome.isNotBlank() || categoria.isNotBlank() || preco.isNotBlank() || quantEstoque.isNotBlank()){
+                // Adiciona o produto à lista
+                listaProdutos.add(Produto(nome, categoria, preco.toFloatOrNull() ?: 0.0f, quantEstoque.toIntOrNull() ?: 0))
+                nome = ""
+                categoria = ""
+                preco = ""
+                quantEstoque = ""
+            } else {
+                Toast.makeText(
+                    context,
+                    "Preencha todos os campos",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            Toast.makeText(
+                context,
+                "produto cadastrado com sucesso",
+                Toast.LENGTH_SHORT
+            ).show()
+
+
+
         }) {
             Text(text = "Cadastrar")
         }

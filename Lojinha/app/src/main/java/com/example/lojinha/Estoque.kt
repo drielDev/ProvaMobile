@@ -11,12 +11,12 @@ class Estoque {
 
         fun calcularValorTotalEstoque(): Float {
             var precoTotal = 0.0f
-            var quant = 0
 
-            listaEstoque.forEach { precoTotal += it.preco}
-            listaEstoque.forEach { quant += it.quantEstoque}
+            listaEstoque.forEach { produto ->
+                precoTotal += produto.preco * produto.quantEstoque
+            }
 
-            return precoTotal * quant
+            return precoTotal
         }
 
         fun quantidadeTotalProdutos(): Int{

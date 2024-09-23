@@ -142,65 +142,67 @@ fun LayoutMain() {
 @Composable
 fun ProdutoActivity(navController: NavController, produtos: List<Produto>) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), // Adicionando padding geral
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top // Colocando o conteúdo no topo
     ) {
 
-        LazyColumn() {
+        LazyColumn(
+            modifier = Modifier.fillMaxHeight(0.8f), // Ocupar 80% da altura da tela
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Espaçamento entre os itens
+        ) {
             items(Estoque.listaEstoque) { produto ->
-                Text(
-                    text = "${produto.nome} - (${produto.quantEstoque} unidades)",
-                    fontSize = 15.sp
-                )
-                Button(onClick = {
-                    val produtoJson = Gson().toJson(produto)
-                    navController.navigate("detalhes/$produtoJson")
-                }) {
-                    Text(text = "Detalhes")
-                }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "${produto.nome} - (${produto.quantEstoque} unidades)",
+                            fontSize = 20.sp,
+                        )
+
+                        Button(
+                            onClick = {
+                                val produtoJson = Gson().toJson(produto)
+                                navController.navigate("detalhes/$produtoJson")
+                            }
+                        ) {
+                            Text(text = "Detalhes")
+                        }
+                    }
             }
-        }
-
-        Button(onClick = {
-            // Volta para a tela anterior
-            navController.popBackStack()
-        }) {
-            Text(text = "Voltar")
-        }
-    }
-}
-
-@Composable
-fun ListaProduto(produto: Produto, navController: NavController) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = "Produto ${produto.nome} (${produto.quantEstoque})", fontSize = 20.sp)
-
-        Button(onClick = {
-            // Navega para a tela de detalhes com os parâmetros
-            navController.navigate(
-                "detalhes/${produto.nome}/${produto.categoria}/${produto.preco}/${produto.quantEstoque}"
-            )
-        }) {
-            Text(text = "Detalhes")
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Button(onClick = {
-            navController.navigate("informacaoEstoque")
-        }) {
-            Text(text = "Estatísticas")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp), // Adicionando padding aos botões
+            horizontalArrangement = Arrangement.SpaceEvenly // Espaçamento igual entre os botões
+        ) {
+            Button(
+                onClick = {
+                    navController.navigate("informacaoEstoque")
+                }
+            ) {
+                Text(text = "informaçoes sobre o estoque")
+            }
+
+            Button(
+                onClick = {
+                    navController.popBackStack()
+                }
+            ) {
+                Text(text = "Voltar")
+            }
         }
     }
 }
-
 
 @Composable
 fun Detalhes(navController: NavController, produto: Produto) {
@@ -212,7 +214,7 @@ fun Detalhes(navController: NavController, produto: Produto) {
         Text(text = "Nome: ${produto.nome}", fontSize = 24.sp)
         Text(text = "Categoria: ${produto.categoria}", fontSize = 24.sp)
         Text(text = "Preço: R$ ${produto.preco}", fontSize = 24.sp)
-        Text(text = "Quantidade em Estoque: ${produto.quantEstoque}", fontSize = 24.sp)
+        Text(text = "Quantidade no Estoque: ${produto.quantEstoque}", fontSize = 24.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -231,11 +233,11 @@ fun InformacaoEstoque(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "${Estoque.calcularValorTotalEstoque()} é o valor total do estoques", fontSize = 20.sp)
+        Text(text = "${Estoque.calcularValorTotalEstoque()} valor total do estoque", fontSize = 20.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(text = "Atualmente possuimos ${Estoque.quantidadeTotalProdutos()} produtos", fontSize = 20.sp)
+        Text(text = " ${Estoque.quantidadeTotalProdutos()} produtos no estoque", fontSize = 20.sp)
 
         Button(onClick = { navController.popBackStack() }) {
             Text(text = "Voltar")

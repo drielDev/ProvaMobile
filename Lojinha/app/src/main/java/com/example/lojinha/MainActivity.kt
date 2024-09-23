@@ -72,12 +72,21 @@ fun Cadastro(navController: NavController, listaProdutos: MutableList<Produto>) 
 
         Button(onClick = {
             if(nome.isNotBlank() || categoria.isNotBlank() || preco.isNotBlank() || quantEstoque.isNotBlank()){
-                // Adiciona o produto à lista
-                listaProdutos.add(Produto(nome, categoria, preco.toFloatOrNull() ?: 0.0f, quantEstoque.toIntOrNull() ?: 0))
-                nome = ""
-                categoria = ""
-                preco = ""
-                quantEstoque = ""
+                if(preco.toFloatOrNull() ?: 0.0f >= 0.0f && quantEstoque.toIntOrNull() ?: 0 >= 1){
+                    // Adiciona o produto à lista
+                    listaProdutos.add(Produto(nome, categoria, preco.toFloatOrNull() ?: 0.0f, quantEstoque.toIntOrNull() ?: 0))
+                    nome = ""
+                    categoria = ""
+                    preco = ""
+                    quantEstoque = ""
+                } else {
+                    Toast.makeText(
+                        context,
+                        "preco ou quantidade no estoque incorretos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                
             } else {
                 Toast.makeText(
                     context,

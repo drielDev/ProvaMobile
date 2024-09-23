@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,6 +24,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.gson.Gson
+
 
 
 class MainActivity : ComponentActivity() {
@@ -59,47 +63,40 @@ fun Cadastro(navController: NavController, listaProdutos: MutableList<Produto>) 
             onValueChange = {
                 preco = it
             },
-            label = { Text(text = "Preço") }
+            label = { Text(text = "Preço") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
         )
         Spacer(modifier = Modifier.height(20.dp))
 
         TextField(
             value = quantEstoque,
             onValueChange = { quantEstoque = it },
-            label = { Text(text = "Quantidade em Estoque") }
+            label = { Text(text = "Quantidade em Estoque") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
-            if(nome.isNotBlank() || categoria.isNotBlank() || preco.isNotBlank() || quantEstoque.isNotBlank()){
-                if(preco.toFloatOrNull() ?: 0.0f >= 0.0f && quantEstoque.toIntOrNull() ?: 0 >= 1){
-                    // Adiciona o produto à lista
-                    listaProdutos.add(Produto(nome, categoria, preco.toFloatOrNull() ?: 0.0f, quantEstoque.toIntOrNull() ?: 0))
-                    nome = ""
-                    categoria = ""
-                    preco = ""
-                    quantEstoque = ""
-                } else {
-                    Toast.makeText(
-                        context,
-                        "preco ou quantidade no estoque incorretos",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                
+            // Verificação de parametros
+            if (nome.isBlank() || categoria.isBlank() || preco.isBlank() || quantEstoque.isBlank()) {
+                Toast.makeText(context, "Preencher todos os campos!", Toast.LENGTH_SHORT).show()
+            } else if (quantEstoque.toInt() < 1) {
+                Toast.makeText(context, "Quantidade não pode ser menor que 1!", Toast.LENGTH_SHORT)
+                    .show()
+            } else if (preco.toFloat() < 0) {
+                Toast.makeText(context, "Preço não pode ser menor que 0!", Toast.LENGTH_SHORT)
+                    .show()
             } else {
-                Toast.makeText(
-                    context,
-                    "Preencha todos os campos",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            Toast.makeText(
-                context,
-                "produto cadastrado com sucesso",
-                Toast.LENGTH_SHORT
-            ).show()
+                Estoque.adicionarProdutos(nome, categoria, preco.toFloat(), quantEstoque.toInt())
 
+                Toast.makeText(context, "Produto Cadastrado com sucesso!", Toast.LENGTH_SHORT)
+                    .show()
+
+                nome = ""
+                preco = ""
+                quantEstoque = ""
+                categoria = ""
+            }
         }) {
             Text(text = "Cadastrar")
         }
@@ -131,18 +128,13 @@ fun LayoutMain() {
             ProdutoActivity(navController = navController, produtos = listaProdutos)
         }
 
-        composable("detalhes/{nome}/{categoria}/{preco}/{quantEstoque}") { backStackEntry ->
-            val nome = backStackEntry.arguments?.getString("nome")
-            val categoria = backStackEntry.arguments?.getString("categoria")
-            val preco = backStackEntry.arguments?.getString("preco")?.toFloatOrNull()
-            val quantEstoque = backStackEntry.arguments?.getString("quantEstoque")?.toIntOrNull()
+        composable("informacaoEstoque") { InformacaoEstoque(navController) }
 
-            if (nome != null && categoria != null && preco != null && quantEstoque != null) {
-                Detalhes(
-                    navController = navController,
-                    produto = Produto(nome, categoria, preco, quantEstoque)
-                )
-            }
+        composable("detalhes/{produtoJson}") { backStackEntry ->
+            val produtoJson = backStackEntry.arguments?.getString("produtoJson")
+            val produto = Gson().fromJson(produtoJson, Produto::class.java)
+
+            Detalhes(navController, produto)
         }
     }
 }
@@ -155,15 +147,17 @@ fun ProdutoActivity(navController: NavController, produtos: List<Produto>) {
         verticalArrangement = Arrangement.Center
     ) {
 
-        if (produtos.isEmpty()) {
-            Text(
-                text = "Nenhuma produto cadastrado",
-                modifier = Modifier.padding(16.dp)
-            )
-        } else {
-            LazyColumn(Modifier.fillMaxWidth()) {
-                items(produtos) { produto ->
-                    ListaProduto(produto = produto, navController)
+        LazyColumn() {
+            items(Estoque.listaEstoque) { produto ->
+                Text(
+                    text = "${produto.nome} - (${produto.quantEstoque} unidades)",
+                    fontSize = 15.sp
+                )
+                Button(onClick = {
+                    val produtoJson = Gson().toJson(produto)
+                    navController.navigate("detalhes/$produtoJson")
+                }) {
+                    Text(text = "Detalhes")
                 }
             }
         }
@@ -196,6 +190,14 @@ fun ListaProduto(produto: Produto, navController: NavController) {
         }) {
             Text(text = "Detalhes")
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Button(onClick = {
+            navController.navigate("informacaoEstoque")
+        }) {
+            Text(text = "Estatísticas")
+        }
     }
 }
 
@@ -215,7 +217,6 @@ fun Detalhes(navController: NavController, produto: Produto) {
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(onClick = {
-            // Volta para a tela anterior
             navController.popBackStack()
         }) {
             Text(text = "Voltar")
@@ -223,6 +224,24 @@ fun Detalhes(navController: NavController, produto: Produto) {
     }
 }
 
+@Composable
+fun InformacaoEstoque(navController: NavController) {
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "${Estoque.calcularValorTotalEstoque()} é o valor total do estoques", fontSize = 20.sp)
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(text = "Atualmente possuimos ${Estoque.quantidadeTotalProdutos()} produtos", fontSize = 20.sp)
+
+        Button(onClick = { navController.popBackStack() }) {
+            Text(text = "Voltar")
+        }
+    }
+}
 
 
 @Preview(showBackground = true)

@@ -36,9 +36,12 @@ fun LayoutMain() {
 
     var nome by remember { mutableStateOf("")}
     var categoria by remember { mutableStateOf("")}
-    var preco by remember { mutableStateOf(0.0f)}
-    var quantEstoque by remember { mutableStateOf(0)}
+    var preco by remember { mutableStateOf("")}
+    var quantEstoque by remember { mutableStateOf("")}
+    var listaProdutos by remember { mutableStateOf(listOf<Produto>()) }
 
+    var precoFloat by remember { mutableStateOf(0.0f) }
+    var quantProdutoFloat by remember { mutableStateOf(0) }
 
 
     Column(modifier = Modifier.fillMaxSize(),
@@ -46,11 +49,30 @@ fun LayoutMain() {
         verticalArrangement = Arrangement.Center) {
 
         TextField(value = nome, onValueChange = {nome = it}, label = { Text(text = "Nome")})
+
+        TextField(value = categoria, onValueChange = {categoria = it}, label = { Text(text = "categoria")})
+
+        TextField(
+            value = preco,
+            onValueChange = {
+                preco = it
+                precoFloat = it.toFloatOrNull() ?: 0.0f
+            },
+            label = { Text(text = "Preço") }
+        )
+
+        TextField(
+            value = quantEstoque,
+            onValueChange = {
+                quantEstoque = it
+                quantProdutoFloat = it.toIntOrNull() ?: 0 },
+            label = { Text(text = "Quantidade em Estoque") }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun LayoutPreview() {
-
+    LayoutMain()
 }
